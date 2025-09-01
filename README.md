@@ -14,6 +14,3 @@ Practice space for AI Engineer coursework and Python exercises.
 3. Run a script:
    - `python ai-engineer-assignment/<folder>/<script>.py`
 
-## Notes
-- Secrets should not be committed. Use environment variables (files like `.env.local` are ignored by Git).
-- Large or raw datasets belong in a `data/` subfolder which is already gitignored.
