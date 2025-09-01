@@ -6,10 +6,6 @@ Print the FizzBuzz sequence from 1 to N:
 - "Fizz" for numbers divisible by 3 only
 - "Buzz" for numbers divisible by 5 only
 - The number itself otherwise
-
-Usage
-- Python: `python ai-engineer-assignment/week1-assignment/python/01_fizzbuzz.py`
-- Makefile: `make run W=week1-assignment S=python/01_fizzbuzz.py`
 """
 
 
