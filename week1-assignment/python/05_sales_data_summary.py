@@ -1,5 +1,14 @@
 
+"""
+Assignment 05 — Sales Data Summary
+
+Compute and print summary statistics for a list of sales values:
+- Total, average (1 decimal), highest, and lowest.
+"""
+
+
 def sales_summary(sales: list) -> None:
+    """Print total, average, highest and lowest values for the given sales list."""
     
     # Calculate and print total sales
     total_sales = sum(sales)
@@ -9,7 +18,7 @@ def sales_summary(sales: list) -> None:
     average_sales = total_sales / len(sales)
     print(f"Average Sales: {average_sales:.1f}")
 
-    # highes sales
+    # highest sales
     highest_sales = max(sales)
     print(f"Highest Sales: {highest_sales}")
 
