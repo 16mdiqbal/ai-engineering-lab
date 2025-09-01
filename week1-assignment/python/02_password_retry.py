@@ -1,9 +1,14 @@
 """
-- Create a simple login system that allows a user to enter a password. 
-- The user has three attempts to enter the correct password. 
-- If the user fails to enter the correct password in three attempts, 
-    the system should lock the account and display a message indicating that the account is locked. 
-- If the user enters the correct password, display a welcome message.
+Assignment 02 — Password Retry
+
+Simple login flow with limited attempts:
+- User has three attempts to enter the correct password.
+- Locks after three failures; prints a welcome message on success.
+- Default password is set in `correct_password` ("openAI123").
+
+Usage
+- Python: `python ai-engineer-assignment/week1-assignment/python/02_password_retry.py`
+- Makefile: `make run W=week1-assignment S=python/02_password_retry.py`
 """
 
 def login_system() -> None:
