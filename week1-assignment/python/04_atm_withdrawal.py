@@ -1,12 +1,21 @@
 """
 Assignment 04 — ATM Withdrawal
 
-Simulate an ATM withdrawal flow:
-- Prompt for withdrawal amount and validate against available balance.
-- Enforce simple rules (e.g., positive amount, sufficient funds).
-- Print resulting balance or an error message.
+Prompts for a withdrawal amount and validates that it is a multiple of 100.
+- Prints "Dispensing {amount}" when valid.
+- Prints "Invalid amount" otherwise.
 
-Usage
-- Python: `python ai-engineer-assignment/week1-assignment/python/04_atm_withdrawal.py`
-- Makefile: `make run W=week1-assignment S=python/04_atm_withdrawal.py`
 """
+
+
+
+def atm_withdrawal() -> None:
+    amount = int(input("Enter withdrawal amount: ").strip())
+
+    if amount % 100 == 0:
+        print(f"Dispensing {amount}")
+    else:
+        print("Invalid amount")
+
+if __name__ == "__main__":
+    atm_withdrawal()        
