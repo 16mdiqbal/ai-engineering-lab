@@ -2,8 +2,7 @@
 """
 Assignment 05 — Sales Data Summary
 
-Compute and print summary statistics for a list of sales values:
-- Total, average (1 decimal), highest, and lowest.
+Computes total, average (1 decimal), highest, and lowest for a sales list.
 """
 
 

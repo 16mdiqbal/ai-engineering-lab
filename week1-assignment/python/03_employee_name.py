@@ -1,7 +1,7 @@
 """
 Assignment 03 — Employee Names
 
-Print employee names with serial numbers from a list.
+Prints employee names with 1-based serial numbers.
 """
 
 def get_employee_name() -> None:

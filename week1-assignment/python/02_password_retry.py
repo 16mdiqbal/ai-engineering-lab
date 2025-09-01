@@ -1,10 +1,7 @@
 """
 Assignment 02 — Password Retry
 
-Simple login flow with limited attempts:
-- User has three attempts to enter the correct password.
-- Locks after three failures; prints a welcome message on success.
-- Default password is set in `correct_password` ("openAI123").
+Simple login with three attempts; locks on failure (default password in `correct_password`).
 """
 
 def login_system() -> None:

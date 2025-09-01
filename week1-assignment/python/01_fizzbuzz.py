@@ -1,11 +1,7 @@
 """
 Assignment 01 — FizzBuzz
 
-Print the FizzBuzz sequence from 1 to N:
-- "FizzBuzz" for numbers divisible by 3 and 5
-- "Fizz" for numbers divisible by 3 only
-- "Buzz" for numbers divisible by 5 only
-- The number itself otherwise
+Prints FizzBuzz from 1 to N using standard rules.
 """
 
 
