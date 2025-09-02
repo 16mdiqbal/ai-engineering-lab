@@ -1,0 +1,4 @@
+# User-requested ignores
+data/
+.env*
+.venv/
