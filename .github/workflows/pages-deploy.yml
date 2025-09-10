@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       html_path:
-        description: 'Path to HTML file (relative to repo root, e.g. week1-assignment/html/data_storage_types.html)'
+        description: 'Path to HTML file (e.g., week1-assignment/html/data_storage_types.html)'
         required: true
         default: 'week1-assignment/html/data_storage_types.html'
         type: string
       subdir_name:
-        description: 'Subfolder under Pages root (e.g. data_storage_types)'
+        description: 'Subfolder under Pages root (e.g., data_storage_types)'
         required: true
         default: 'data_storage_types'
         type: string
@@ -26,9 +26,17 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      subdir: ${{ steps.vars.outputs.subdir }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Resolve inputs
+        id: vars
+        shell: bash
+        run: |
+          echo "subdir=${{ github.event.inputs.subdir_name }}" >> "$GITHUB_OUTPUT"
 
       - name: Stage site into chosen subfolder
         shell: bash
@@ -56,12 +64,12 @@ jobs:
           # Copy source folder into subdir
           cp -R "$SRC_DIR"/. "site/$SUBDIR/"
 
-          # Ensure index.html exists
+          # Ensure index.html exists in subdir
           if [ ! -f "site/$SUBDIR/index.html" ]; then
             mv "site/$SUBDIR/$HTML_FILE" "site/$SUBDIR/index.html"
           fi
 
-          # Add 404.html inside subdir for safety
+          # Optional 404 in subdir (nice for SPAs/deep links)
           cp "site/$SUBDIR/index.html" "site/$SUBDIR/404.html" || true
 
           # ---- Root redirect to subdir ----
@@ -69,12 +77,12 @@ jobs:
           <!doctype html>
           <html><head>
             <meta charset="utf-8">
-            <meta http-equiv="refresh" content="0; url=./$SUBDIR/">
-            <script>location.replace('./$SUBDIR/');</script>
+            <meta http-equiv="refresh" content="0; url=./${{ github.event.inputs.subdir_name }}/">
+            <script>location.replace('./${{ github.event.inputs.subdir_name }}/');</script>
             <title>Redirecting…</title>
           </head>
           <body>
-            <p>Redirecting to <a href="./$SUBDIR/">./$SUBDIR/</a>…</p>
+            <p>Redirecting to <a href="./${{ github.event.inputs.subdir_name }}/">./${{ github.event.inputs.subdir_name }}/</a>…</p>
           </body></html>
           EOF
 
@@ -96,9 +104,13 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+    # 👇 Set the environment URL to the final sub-URL (so the link in the run is correct)
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ format('https://{0}.github.io/{1}/{2}/',
+                      github.repository_owner,
+                      github.event.repository.name,
+                      needs.build.outputs.subdir) }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
@@ -107,4 +119,7 @@ jobs:
       - name: Print final URL
         run: |
           echo "✅ Your assignment is live at:"
-          echo "${{ steps.deployment.outputs.page_url }}${{ github.event.inputs.subdir_name }}/"
+          echo "${{ format('https://{0}.github.io/{1}/{2}/',
+                           github.repository_owner,
+                           github.event.repository.name,
+                           needs.build.outputs.subdir) }}"
