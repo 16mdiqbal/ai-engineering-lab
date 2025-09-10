@@ -1,21 +1,16 @@
-name: Deploy assignment to a subpath on GitHub Pages
+name: Deploy assignment to GitHub Pages
 
 on:
-  push:
-    branches: [ main ]
-    # Auto-deploy when the week1 html folder changes
-    paths:
-      - 'week1-assignment/html/**'
   workflow_dispatch:
     inputs:
       html_path:
-        description: 'Path to the HTML file (relative to repo root)'
-        required: false
+        description: 'Path to HTML file (relative to repo root, e.g. week1-assignment/html/data_storage_types.html)'
+        required: true
         default: 'week1-assignment/html/data_storage_types.html'
         type: string
       subdir_name:
-        description: 'Subfolder under Pages root to publish into'
-        required: false
+        description: 'Subfolder name under Pages root (e.g. data_storage_types)'
+        required: true
         default: 'data_storage_types'
         type: string
 
@@ -25,7 +20,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: 'pages'
+  group: "pages"
   cancel-in-progress: true
 
 jobs:
@@ -35,34 +30,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Resolve inputs
-        id: vars
-        shell: bash
-        run: |
-          # Defaults (used for push-triggered runs)
-          DEF_HTML='week1-assignment/html/data_storage_types.html'
-          DEF_SUB='data_storage_types'
-
-          # Take manual inputs when present
-          HTML_IN='${{ github.event.inputs.html_path }}'
-          SUB_IN='${{ github.event.inputs.subdir_name }}'
-
-          HTML_PATH="${HTML_IN:-$DEF_HTML}"
-          SUBDIR_NAME="${SUB_IN:-$DEF_SUB}"
-
-          echo "html_path=$HTML_PATH" >> "$GITHUB_OUTPUT"
-          echo "subdir_name=$SUBDIR_NAME" >> "$GITHUB_OUTPUT"
-
-      - name: Stage subdirectory site
-        shell: bash
+      - name: Stage site into chosen subfolder
         run: |
           set -euo pipefail
 
-          HTML_PATH='${{ steps.vars.outputs.html_path }}'
-          SUBDIR='${{ steps.vars.outputs.subdir_name }}'
+          HTML_PATH="${{ github.event.inputs.html_path }}"
+          SUBDIR="${{ github.event.inputs.subdir_name }}"
 
-          echo "Selected HTML: $HTML_PATH"
-          echo "Publishing under subfolder: $SUBDIR"
+          echo "HTML_PATH=$HTML_PATH"
+          echo "SUBDIR=$SUBDIR"
 
           if [ ! -f "$HTML_PATH" ]; then
             echo "ERROR: File not found: $HTML_PATH" >&2
@@ -72,28 +48,25 @@ jobs:
           SRC_DIR="$(dirname "$HTML_PATH")"
           HTML_FILE="$(basename "$HTML_PATH")"
 
-          # Create the site layout: site/<SUBDIR>/*
+          # Create target subfolder
           rm -rf site
           mkdir -p "site/$SUBDIR"
 
-          # Copy everything from the HTML's containing directory
+          # Copy everything from the source directory
           cp -R "$SRC_DIR"/. "site/$SUBDIR/"
 
-          # Ensure entry file is index.html at site/<SUBDIR>/index.html
+          # Ensure index.html exists
           if [ ! -f "site/$SUBDIR/index.html" ]; then
             mv "site/$SUBDIR/$HTML_FILE" "site/$SUBDIR/index.html"
           fi
 
-          # Optional: for SPAs/deep links inside that subdir
-          if [ ! -f "site/$SUBDIR/404.html" ]; then
-            cp "site/$SUBDIR/index.html" "site/$SUBDIR/404.html" || true
-          fi
+          # Optional 404.html for deep links
+          cp "site/$SUBDIR/index.html" "site/$SUBDIR/404.html" || true
 
-          echo "=== Deployed folder tree ==="
-          find site -maxdepth 2 -type f -print | sort
+          echo "=== Final site structure ==="
+          find site -maxdepth 2 -type f | sort
 
-          # Final guard
-          test -f "site/$SUBDIR/index.html" || (echo "index.html missing in $SUBDIR" >&2; exit 2)
+          test -f "site/$SUBDIR/index.html" || (echo "ERROR: index.html missing" >&2; exit 2)
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
