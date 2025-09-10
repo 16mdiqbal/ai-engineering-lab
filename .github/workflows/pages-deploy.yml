@@ -1,11 +1,17 @@
-name: Deploy specific HTML
+name: Deploy week1 HTML to GitHub Pages
 
 on:
+  push:
+    branches: [ main ]
+    # Auto-deploy when this subfolder changes
+    paths:
+      - 'week1-assignment/html/**'
   workflow_dispatch:
     inputs:
       html_path:
-        description: "Path to HTML file relative to repo root (e.g., week1-assignment/html/index.html)"
-        required: true
+        description: 'Path to the HTML file (relative to repo root)'
+        required: false
+        default: 'week1-assignment/html/data_storage_types.html'
         type: string
 
 permissions:
@@ -14,34 +20,67 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: 'pages'
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Stage requested HTML and its assets
+        # Decide which HTML to publish (manual input wins, else default)
+      - name: Set HTML path
+        id: setpath
+        shell: bash
         run: |
-          set -e
-          FILE="${{ github.event.inputs.html_path }}"
-          DIR=$(dirname "$FILE")
+          DEFAULT='week1-assignment/html/data_storage_types.html'
+          INPUT='${{ github.event.inputs.html_path }}'
+          if [ -n "$INPUT" ]; then
+            CHOSEN="$INPUT"
+          else
+            CHOSEN="$DEFAULT"
+          fi
+          echo "html=$CHOSEN" >> "$GITHUB_OUTPUT"
 
-          echo "Using file: $FILE"
-          echo "Containing dir: $DIR"
+      - name: Stage site (selected folder only)
+        shell: bash
+        run: |
+          set -euo pipefail
 
-          mkdir site
-          cp -r "$DIR"/* site/
+          FILE='${{ steps.setpath.outputs.html }}'
+          echo "Selected HTML: $FILE"
 
-          # Ensure entry file is index.html
-          if [ ! -f site/index.html ]; then
-            mv "site/$(basename "$FILE")" site/index.html
+          if [ ! -f "$FILE" ]; then
+            echo "ERROR: File not found: $FILE" >&2
+            exit 1
           fi
 
-          echo "=== Site content ==="
-          ls -la site
+          DIR="$(dirname "$FILE")"
+          BASE="$(basename "$FILE")"
+
+          # Copy the containing folder as the site root
+          rm -rf site
+          mkdir -p site
+          cp -R "$DIR"/. site/
+
+          echo "Top-level files in site/:"
+          (cd site && ls -la)
+
+          # Ensure entry point is index.html
+          if [ ! -f site/index.html ]; then
+            echo "Renaming $BASE -> index.html"
+            mv "site/$BASE" site/index.html
+          fi
+
+          # Optional: help SPAs/deep links (safe for static pages too)
+          if [ ! -f site/404.html ]; then
+            cp site/index.html site/404.html || true
+          fi
+
+          # Final guard
+          test -f site/index.html || (echo "site/index.html missing" >&2; exit 2)
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
