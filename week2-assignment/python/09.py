@@ -19,6 +19,10 @@ class BankAccount:
         self.balance -= amount
         return self.balance
 
+    def __str__(self):
+        """Returns a string representation of the account details and current balance."""
+        return f"Account holder: {self.account_holder}, Account Type: {self.account_type}, Current balance: ₹${self.balance:.2f}"
+
     def display_balance(self):
         '''Returns a string representation of the account details and current balance.'''
         return f"Account holder: {self.account_holder}, Account Type: {self.account_type}, Current balance: ₹${self.balance:.2f}"    
@@ -26,9 +30,12 @@ class BankAccount:
 
 if __name__ == "__main__":
     b1 = BankAccount("Iqbal", 1000.0, "Checking")
-    print(b1.display_balance())  # Account holder: Alice, Account Type: Checking, Current balance: ₹1000.00
+    #print(b1.display_balance())  # Account holder: Alice, Account Type: Checking, Current balance: ₹1000.00
+    print(str(b1))
     b1.deposit(500)
-    print(b1.display_balance())  # Account holder: Alice, Account Type: Checking, Current balance: ₹1500.00
+    #print(b1.display_balance())  # Account holder: Alice, Account Type: Checking, Current balance: ₹1500.00
+    print(str(b1))
     b1.withdraw(200)
-    print(b1.display_balance())  # Account holder: Alice, Account Type: Checking, Current balance: ₹1300.00
+    #print(b1.display_balance())  # Account holder: Alice, Account Type: Checking, Current balance: ₹1300.00
+    print(str(b1))
     print(b1.withdraw(2000))     # Insufficient funds    
