@@ -1,6 +1,8 @@
 name: Deploy assignment to GitHub Pages
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
     inputs:
       html_path:
@@ -36,6 +38,10 @@ jobs:
 
           HTML_PATH="${{ github.event.inputs.html_path }}"
           SUBDIR="${{ github.event.inputs.subdir_name }}"
+
+          # Fallback defaults when triggered by push (no inputs available)
+          : "${HTML_PATH:=week1-assignment/html/data_storage_types.html}"
+          : "${SUBDIR:=data_storage_types}"
 
           echo "HTML_PATH=$HTML_PATH"
           echo "SUBDIR=$SUBDIR"
