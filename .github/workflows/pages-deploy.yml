@@ -1,9 +1,9 @@
-name: Deploy week1 HTML to GitHub Pages
+name: Deploy assignment to a subpath on GitHub Pages
 
 on:
   push:
     branches: [ main ]
-    # Auto-deploy when this subfolder changes
+    # Auto-deploy when the week1 html folder changes
     paths:
       - 'week1-assignment/html/**'
   workflow_dispatch:
@@ -12,6 +12,11 @@ on:
         description: 'Path to the HTML file (relative to repo root)'
         required: false
         default: 'week1-assignment/html/data_storage_types.html'
+        type: string
+      subdir_name:
+        description: 'Subfolder under Pages root to publish into'
+        required: false
+        default: 'data_storage_types'
         type: string
 
 permissions:
@@ -30,57 +35,65 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-        # Decide which HTML to publish (manual input wins, else default)
-      - name: Set HTML path
-        id: setpath
+      - name: Resolve inputs
+        id: vars
         shell: bash
         run: |
-          DEFAULT='week1-assignment/html/data_storage_types.html'
-          INPUT='${{ github.event.inputs.html_path }}'
-          if [ -n "$INPUT" ]; then
-            CHOSEN="$INPUT"
-          else
-            CHOSEN="$DEFAULT"
-          fi
-          echo "html=$CHOSEN" >> "$GITHUB_OUTPUT"
+          # Defaults (used for push-triggered runs)
+          DEF_HTML='week1-assignment/html/data_storage_types.html'
+          DEF_SUB='data_storage_types'
 
-      - name: Stage site (selected folder only)
+          # Take manual inputs when present
+          HTML_IN='${{ github.event.inputs.html_path }}'
+          SUB_IN='${{ github.event.inputs.subdir_name }}'
+
+          HTML_PATH="${HTML_IN:-$DEF_HTML}"
+          SUBDIR_NAME="${SUB_IN:-$DEF_SUB}"
+
+          echo "html_path=$HTML_PATH" >> "$GITHUB_OUTPUT"
+          echo "subdir_name=$SUBDIR_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Stage subdirectory site
         shell: bash
         run: |
           set -euo pipefail
 
-          FILE='${{ steps.setpath.outputs.html }}'
-          echo "Selected HTML: $FILE"
+          HTML_PATH='${{ steps.vars.outputs.html_path }}'
+          SUBDIR='${{ steps.vars.outputs.subdir_name }}'
 
-          if [ ! -f "$FILE" ]; then
-            echo "ERROR: File not found: $FILE" >&2
+          echo "Selected HTML: $HTML_PATH"
+          echo "Publishing under subfolder: $SUBDIR"
+
+          if [ ! -f "$HTML_PATH" ]; then
+            echo "ERROR: File not found: $HTML_PATH" >&2
             exit 1
           fi
 
-          DIR="$(dirname "$FILE")"
-          BASE="$(basename "$FILE")"
+          SRC_DIR="$(dirname "$HTML_PATH")"
+          HTML_FILE="$(basename "$HTML_PATH")"
 
-          # Copy the containing folder as the site root
+          # Create the site layout: site/<SUBDIR>/*
           rm -rf site
-          mkdir -p site
-          cp -R "$DIR"/. site/
+          mkdir -p "site/$SUBDIR"
 
-          echo "Top-level files in site/:"
-          (cd site && ls -la)
+          # Copy everything from the HTML's containing directory
+          cp -R "$SRC_DIR"/. "site/$SUBDIR/"
 
-          # Ensure entry point is index.html
-          if [ ! -f site/index.html ]; then
-            echo "Renaming $BASE -> index.html"
-            mv "site/$BASE" site/index.html
+          # Ensure entry file is index.html at site/<SUBDIR>/index.html
+          if [ ! -f "site/$SUBDIR/index.html" ]; then
+            mv "site/$SUBDIR/$HTML_FILE" "site/$SUBDIR/index.html"
           fi
 
-          # Optional: help SPAs/deep links (safe for static pages too)
-          if [ ! -f site/404.html ]; then
-            cp site/index.html site/404.html || true
+          # Optional: for SPAs/deep links inside that subdir
+          if [ ! -f "site/$SUBDIR/404.html" ]; then
+            cp "site/$SUBDIR/index.html" "site/$SUBDIR/404.html" || true
           fi
+
+          echo "=== Deployed folder tree ==="
+          find site -maxdepth 2 -type f -print | sort
 
           # Final guard
-          test -f site/index.html || (echo "site/index.html missing" >&2; exit 2)
+          test -f "site/$SUBDIR/index.html" || (echo "index.html missing in $SUBDIR" >&2; exit 2)
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
