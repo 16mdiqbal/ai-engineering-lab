@@ -1,11 +1,12 @@
-name: Deploy week1 HTML to GitHub Pages
+name: Deploy specific HTML
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'week1-assignment/html/**'
   workflow_dispatch:
+    inputs:
+      html_path:
+        description: "Path to HTML file relative to repo root (e.g., week1-assignment/html/index.html)"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -13,25 +14,37 @@ permissions:
   id-token: write
 
 concurrency:
-  group: 'pages'
+  group: "pages"
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # Copy just the site content from your subfolder into a staging dir
-      - name: Prepare site
+      - name: Stage requested HTML and its assets
         run: |
-          mkdir -p site
-          cp -r week1-assignment/html/* site/
+          set -e
+          FILE="${{ github.event.inputs.html_path }}"
+          DIR=$(dirname "$FILE")
 
-      # Upload that staging dir as the Pages artifact
+          echo "Using file: $FILE"
+          echo "Containing dir: $DIR"
+
+          mkdir site
+          cp -r "$DIR"/* site/
+
+          # Ensure entry file is index.html
+          if [ ! -f site/index.html ]; then
+            mv "site/$(basename "$FILE")" site/index.html
+          fi
+
+          echo "=== Site content ==="
+          ls -la site
+
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v3
         with:
           path: site
 
