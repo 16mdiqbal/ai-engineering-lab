@@ -1,8 +1,6 @@
 name: Deploy assignment to GitHub Pages
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
     inputs:
       html_path:
@@ -11,7 +9,7 @@ on:
         default: 'week1-assignment/html/data_storage_types.html'
         type: string
       subdir_name:
-        description: 'Subfolder name under Pages root (e.g. data_storage_types)'
+        description: 'Subfolder under Pages root (e.g. data_storage_types)'
         required: true
         default: 'data_storage_types'
         type: string
@@ -33,15 +31,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Stage site into chosen subfolder
+        shell: bash
         run: |
           set -euo pipefail
 
           HTML_PATH="${{ github.event.inputs.html_path }}"
           SUBDIR="${{ github.event.inputs.subdir_name }}"
-
-          # Fallback defaults when triggered by push (no inputs available)
-          : "${HTML_PATH:=week1-assignment/html/data_storage_types.html}"
-          : "${SUBDIR:=data_storage_types}"
 
           echo "HTML_PATH=$HTML_PATH"
           echo "SUBDIR=$SUBDIR"
@@ -54,11 +49,11 @@ jobs:
           SRC_DIR="$(dirname "$HTML_PATH")"
           HTML_FILE="$(basename "$HTML_PATH")"
 
-          # Create target subfolder
+          # Clean and prepare staging
           rm -rf site
           mkdir -p "site/$SUBDIR"
 
-          # Copy everything from the source directory
+          # Copy source folder into subdir
           cp -R "$SRC_DIR"/. "site/$SUBDIR/"
 
           # Ensure index.html exists
@@ -66,13 +61,32 @@ jobs:
             mv "site/$SUBDIR/$HTML_FILE" "site/$SUBDIR/index.html"
           fi
 
-          # Optional 404.html for deep links
+          # Add 404.html inside subdir for safety
           cp "site/$SUBDIR/index.html" "site/$SUBDIR/404.html" || true
 
-          echo "=== Final site structure ==="
+          # ---- Root redirect to subdir ----
+          cat > site/index.html <<EOF
+          <!doctype html>
+          <html><head>
+            <meta charset="utf-8">
+            <meta http-equiv="refresh" content="0; url=./$SUBDIR/">
+            <script>location.replace('./$SUBDIR/');</script>
+            <title>Redirecting…</title>
+          </head>
+          <body>
+            <p>Redirecting to <a href="./$SUBDIR/">./$SUBDIR/</a>…</p>
+          </body></html>
+          EOF
+
+          # Root 404 also redirects
+          cp site/index.html site/404.html
+
+          echo "=== Final site structure (top two levels) ==="
           find site -maxdepth 2 -type f | sort
 
-          test -f "site/$SUBDIR/index.html" || (echo "ERROR: index.html missing" >&2; exit 2)
+          # Guards
+          test -f "site/$SUBDIR/index.html" || (echo "ERROR: index.html missing in $SUBDIR" >&2; exit 2)
+          test -f "site/index.html" || (echo "ERROR: root redirect missing" >&2; exit 3)
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
@@ -89,3 +103,8 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Print final URL
+        run: |
+          echo "✅ Your assignment is live at:"
+          echo "${{ steps.deployment.outputs.page_url }}${{ github.event.inputs.subdir_name }}/"
