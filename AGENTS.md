@@ -1,38 +1,33 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- Root contains `ai-engineer-assignment/` where all coursework lives.
-- Organize by week or topic: `ai-engineer-assignment/<week-or-topic>/` (e.g., `week1-assignment/`).
-- Each folder can hold standalone scripts and notebooks. A structure like `src/`, `notebooks/`, `assets/`, and `data/` is optional—use it when the code grows.
-  - Use two-digit numbering for assignments: `01_topic.py`, `02_topic.py` inside a subfolder like `python/`. Example: `ai-engineer-assignment/week1-assignment/python/01_fizzbuzz.py`.
+- All coursework lives in `ai-engineer-assignment/`, grouped by weeks such as `ai-engineer-assignment/week1-assignment/`.
+- Root folders like `week1-assignment/` remain for now; migrate them under `ai-engineer-assignment/` whenever you touch their contents to keep the layout consistent.
+- Within each week, separate solution types (`python/`, `assignment/`, `html/`) and add `src/`, `notebooks/`, or `data/` only when reuse demands it.
+- Name runnable scripts with two-digit prefixes (`python/01_fizzbuzz.py`, `python/02_password_retry.py`) and keep notebooks lightweight (`notebooks/progress-notes.ipynb`).
+- Document dataset sources in the owning week’s `README.md`, and stash raw assets in `data/` or `assets/` folders that stay out of Git history.
 
 ## Build, Test, and Development Commands
-- Create env: `python -m venv .venv && source .venv/bin/activate`.
-- Install deps (if present): `pip install -r requirements.txt`.
-- Run a script directly: `python ai-engineer-assignment/<folder>/<script>.py`.
-- Using Makefile (from repo root): `make run W=week1-assignment S=python/01_fizzbuzz.py`.
-- Optional modules: if you add packages later, use `python -m <package_or_module>`.
+- Bootstrap an isolated environment: `python -m venv .venv && source .venv/bin/activate` (or `make venv`).
+- Install shared dependencies: `pip install -r requirements.txt` or `make install` for a scripted flow; run `make freeze` after pinning new packages.
+- Execute scripts directly (`python ai-engineer-assignment/week2-assignment/python/03_data_cleanup.py`) or via Make: `make run W=week1-assignment S=python/01_fizzbuzz.py`.
+- When modules evolve, prefer module invocation (`python -m ai-engineer-assignment.week1-assignment.python.01_fizzbuzz`) so relative imports behave.
 
 ## Coding Style & Naming Conventions
-- Python, 4‑space indent; add type hints and short docstrings for public functions.
-- Files and functions: `snake_case`; classes: `PascalCase`; constants: `UPPER_SNAKE`.
-- Assignment scripts: prefix with two digits reflecting order (e.g., `01_fizzbuzz.py`, `02_password_retry.py`).
-- Notebooks: `lowercase-with-dashes.ipynb`; keep heavy logic in importable `.py` files when it helps reuse.
-- Formatters/linters (optional): `black .`, `ruff .`, `mypy .`.
+- Python uses 4-space indents, `snake_case` for functions/files, `PascalCase` for classes, and `UPPER_SNAKE` for constants.
+- Add type hints and concise docstrings for public functions; keep notebooks thin and move reusable logic into importable modules.
+- Optional tooling: `black .` for formatting, `ruff .` for linting, and `mypy .` to validate typing once modules stabilize.
 
 ## Testing Guidelines
-- No default test framework configured. When needed, add simple self-check scripts or adopt `pytest`.
-- If adopting `pytest`, mirror code with a `tests/` folder (e.g., `weekN/tests/test_example.py`) and run `pytest -q`.
+- No default harness exists; adopt `pytest` when logic extends beyond scripts. Mirror code layout (`ai-engineer-assignment/weekN-assignment/tests/test_example.py`).
+- Run suites with `pytest -q` and record coverage expectations or required fixtures in the week README so others can reproduce results.
 
 ## Commit & Pull Request Guidelines
-- Use Conventional Commits: `feat:`, `fix:`, `docs:`, `refactor:`, etc.
-- Keep commits focused and readable; include rationale in the body when non‑obvious.
-- PRs: clear description, scope, linked issue/task, and usage notes or sample output. Screenshots help for notebook visuals.
-- Prefer small PRs (≤300 lines diff). Ensure scripts run locally.
+- Follow Conventional Commits (`feat: add atm withdrawal logic`, `fix: handle zero balance`) and keep patches focused and reversible.
+- PRs should summarize intent, link related lessons or issues, list validation commands (`make run ...`, `pytest -q`), and add screenshots for UI/notebook output when helpful.
+- Favor small diffs (≤300 lines) and call out follow-up tasks if you defer cleanups.
 
 ## Security & Configuration Tips
-- Never commit secrets. Use environment variables (`.env*` are ignored) and document required keys in the week/topic `README.md`.
-- Place large datasets in `data/` and keep them out of Git; include brief download notes when relevant.
-
-## Agent-Specific Instructions
-- If using AI assistants, note generated files in your PR and summarize any manual edits. Ensure outputs follow the style, tests pass, and code is reproducible end‑to‑end.
+- Never commit credentials or personal data. Use environment variables (`.env*` are ignored) and note required keys in the relevant README.
+- Store large datasets outside Git; provide download locations and integrity checks.
+- If you rely on AI tools, note generated artifacts in your PR and double-check that the outputs are reproducible end-to-end.
