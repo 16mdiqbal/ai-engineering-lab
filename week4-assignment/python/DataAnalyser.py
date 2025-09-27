@@ -22,11 +22,6 @@ class DataAnalyzer(CSVHandler):
         df  = self.load_data()
         return df.sort_values(by=column_name, ascending=ascending)
         
-    
-    def export_data(self, df, output_path):
-        ''' Export DataFrame to CSV file '''
-        df.to_csv(output_path, index=False)
-        print(f"Data exported to {output_path}")
 
     def get_top_n(self, n=5, column_name='Confirmed'):
         ''' 5. Top 5 Countries by Case Count '''
