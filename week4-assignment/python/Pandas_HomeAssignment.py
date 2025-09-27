@@ -4,16 +4,48 @@ import pandas as pd
 class DataLoader:
     def __init__(self, file_path):
         self.file_path = file_path
+        self._data_cache = None  # lazy-loaded cache
 
-    def load_data(self):
-        try:
-            data = pd.read_csv(self.file_path)
-            print("Data loaded successfully.")
-            return data
-        except FileNotFoundError:
-            print(f"File not found: {self.file_path}")
+    def load_data(self, reload: bool = False, copy: bool = False):
+        """
+        Load (and cache) the CSV as a DataFrame.
+
+        Parameters
+        ----------
+        reload : bool, default False
+            Force re-reading from disk, refreshing the in-memory cache.
+        copy : bool, default False
+            Return a defensive copy. Set to True only if the caller intends
+            to mutate the returned DataFrame in-place. Keeping this False
+            avoids unnecessary memory usage on large datasets.
+
+        Notes
+        -----
+        Returning the cached DataFrame directly is safe if callers treat it
+        as read-only. Mutators should either:
+          * request a copy via `copy=True`, or
+          * explicitly call `invalidate_cache()` then `load_data(reload=True)`
+            after external modifications to the source file.
+        """
+        if reload or self._data_cache is None:
+            try:
+                self._data_cache = pd.read_csv(self.file_path)
+                print("Data loaded from disk.")
+            except FileNotFoundError:
+                print(f"File not found: {self.file_path}")
+                self._data_cache = None
+                return None
+        else:
+            print("Using cached data.")
+        if self._data_cache is None:
             return None
-        
+        if copy:
+            return self._data_cache.copy()
+        return self._data_cache
+
+    def invalidate_cache(self):
+        """Invalidate the current cached DataFrame forcing next load to hit disk."""
+        self._data_cache = None
 
 class DataAnalyzer(DataLoader):
     def __init__(self, file_path):
@@ -21,19 +53,18 @@ class DataAnalyzer(DataLoader):
 
     def summarize_data(self, column_name):
         ''' 1. Display total confirmed, death, and recovered cases for each region.'''
-        df  = self.load_data()
+        df  = self.load_data()  # read-only usage
         # dynamically pass column name to groupby function
-
         return df.groupby(column_name)[['Confirmed', 'Deaths', 'Recovered']].sum().reset_index().sort_values(by='Confirmed', ascending=False)
 
     def filter_data(self, column_name='Confirmed', threshold=10):
         ''' 2. Exclude entries where confirmed cases are < 10.'''
-        df  = self.load_data()
+        df  = self.load_data()  # read-only usage
         return df[df[column_name] > threshold] 
     
     def sort_data(self, column_name='Confirmed', ascending=True):
         ''' 4. Sort Data by Confirmed Cases and Save sorted dataset into a new CSV file.'''
-        df  = self.load_data()
+        df  = self.load_data()  # read-only usage
         return df.sort_values(by=column_name, ascending=ascending)
         
     
@@ -44,29 +75,29 @@ class DataAnalyzer(DataLoader):
 
     def get_top_n(self, n=5, column_name='Confirmed'):
         ''' 5. Top 5 Countries by Case Count '''
-        df  = self.load_data()
+        df  = self.load_data()  # read-only usage
         return df.sort_values(by=column_name, ascending=False).head(n)
     
     def get_bottom_n(self, n=5, column_name='Deaths'):
         ''' 6. Region with Lowest Death Count '''
-        df  = self.load_data()
+        df  = self.load_data()  # read-only usage
         return df.sort_values(column_name, ascending=True).head(n)
     
     def calculate_mortality_rate(self, ascending=False):
         ''' 8. Calculate Mortality Rate by Region '''
-        df  = self.load_data()
+        df  = self.load_data(copy=True)  # we add a derived column -> mutate
         df['Mortality Rate'] = (df['Deaths'] / df['Confirmed']) * 100
         return df[['Country/Region', 'WHO Region', 'Confirmed', 'Deaths', 'Mortality Rate']].sort_values(by='Mortality Rate', ascending=ascending)
     
     def calculate_recovery_rate(self, ascending=False):
         ''' 9. Compare Recovery Rates Across Regions '''
-        df  = self.load_data()
+        df = self.load_data(copy=True)  # we add a derived column -> mutate
         df['Recovery Rate'] = (df['Recovered'] / df['Confirmed']) * 100
         return df[['Country/Region', 'WHO Region', 'Confirmed', 'Recovered', 'Recovery Rate']].sort_values(by='Recovery Rate', ascending=ascending)
     
     def detect_outliers(self, column_name='Confirmed'):
         ''' 10. Detect Outliers in Case Counts and Use mean ± 2*std deviation.'''
-        df  = self.load_data()
+        df  = self.load_data()  # read-only usage
         mean = df[column_name].mean()
         std_dev = df[column_name].std()
         lower_bound = mean - 2 * std_dev
@@ -77,12 +108,12 @@ class DataAnalyzer(DataLoader):
 
     def group_data(self, group_by_columns, ascending=False):
         ''' Group Data by Country and Region '''
-        df  = self.load_data()
+        df  = self.load_data()  # read-only usage
         return df.groupby(group_by_columns)[['Confirmed', 'Deaths', 'Recovered']].sum().sort_values(by='Confirmed', ascending=ascending).reset_index()
 
     def identify_zero_recovered(self, column_name='Recovered'):
         ''' Identify Regions with Zero Recovered Cases '''
-        df  = self.load_data()
+        df  = self.load_data()  # read-only usage
         return df[df[column_name] == 0]
         
 
@@ -168,16 +199,15 @@ if __name__ == "__main__":
     print("\n" + "="*50 + "\n")
 
     # Group Data by Country and Region
-    print("Grouping data by Country and Region.")
+    print("11. Grouping data by Country and Region.")
     grouped = analyzer.group_data(['WHO Region'])
     print(grouped)
 
     print("\n" + "="*50 + "\n")
 
     # Identify Regions with Zero Recovered Cases
-    print("Identifying regions with zero recovered cases.")
+    print("12. Identifying regions with zero recovered cases.")
     zero_recovered = analyzer.identify_zero_recovered('Recovered')
     print(zero_recovered)
-    
-    
+
     print("\n" + "="*50 + "\n")
