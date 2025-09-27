@@ -43,3 +43,9 @@ class CSVHandler:
     def invalidate_cache(self):
         """Invalidate the current cached DataFrame forcing next load to hit disk."""
         self._data_cache = None
+
+
+    def export_data(self, df, output_path):
+        ''' Export DataFrame to CSV file '''
+        df.to_csv(output_path, index=False)
+        print(f"Data exported to {output_path}")
