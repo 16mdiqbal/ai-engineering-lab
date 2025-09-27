@@ -4,16 +4,40 @@ import pandas as pd
 class DataLoader:
     def __init__(self, file_path):
         self.file_path = file_path
+        self._data_cache = None  # lazy-loaded cache
 
-    def load_data(self):
-        try:
-            data = pd.read_csv(self.file_path)
-            print("Data loaded successfully.")
-            return data
-        except FileNotFoundError:
-            print(f"File not found: {self.file_path}")
-            return None
-        
+    def load_data(self, reload: bool = False):
+        """Load the CSV into a cached DataFrame.
+
+        Parameters
+        ----------
+        reload : bool, default False
+            If True, forces re-reading the CSV from disk even if a cached
+            DataFrame exists.
+
+        Returns
+        -------
+        pd.DataFrame | None
+            A COPY of the cached DataFrame so callers can't accidentally
+            mutate the internal cache. Returns None if file not found.
+        """
+        if reload or self._data_cache is None:
+            try:
+                self._data_cache = pd.read_csv(self.file_path)
+                print("Data loaded from disk.")
+            except FileNotFoundError:
+                print(f"File not found: {self.file_path}")
+                self._data_cache = None
+                return None
+        else:
+            # Using cached version
+            print("Using cached data.")
+
+        return self._data_cache.copy() if self._data_cache is not None else None
+
+    def invalidate_cache(self):
+        """Invalidate the current cached DataFrame forcing next load to hit disk."""
+        self._data_cache = None
 
 class DataAnalyzer(DataLoader):
     def __init__(self, file_path):
@@ -23,7 +47,6 @@ class DataAnalyzer(DataLoader):
         ''' 1. Display total confirmed, death, and recovered cases for each region.'''
         df  = self.load_data()
         # dynamically pass column name to groupby function
-
         return df.groupby(column_name)[['Confirmed', 'Deaths', 'Recovered']].sum().reset_index().sort_values(by='Confirmed', ascending=False)
 
     def filter_data(self, column_name='Confirmed', threshold=10):
@@ -168,16 +191,15 @@ if __name__ == "__main__":
     print("\n" + "="*50 + "\n")
 
     # Group Data by Country and Region
-    print("Grouping data by Country and Region.")
+    print("11. Grouping data by Country and Region.")
     grouped = analyzer.group_data(['WHO Region'])
     print(grouped)
 
     print("\n" + "="*50 + "\n")
 
     # Identify Regions with Zero Recovered Cases
-    print("Identifying regions with zero recovered cases.")
+    print("12. Identifying regions with zero recovered cases.")
     zero_recovered = analyzer.identify_zero_recovered('Recovered')
     print(zero_recovered)
-    
-    
+
     print("\n" + "="*50 + "\n")
