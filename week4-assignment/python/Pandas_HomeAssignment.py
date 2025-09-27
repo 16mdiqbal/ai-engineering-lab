@@ -37,7 +37,11 @@ class DataLoader:
                 return None
         else:
             print("Using cached data.")
-        return self._data_cache.copy() if (copy and self._data_cache is not None) else self._data_cache
+        if self._data_cache is None:
+            return None
+        if copy:
+            return self._data_cache.copy()
+        return self._data_cache
 
     def invalidate_cache(self):
         """Invalidate the current cached DataFrame forcing next load to hit disk."""
