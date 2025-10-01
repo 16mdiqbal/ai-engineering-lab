@@ -9,10 +9,24 @@ data/
 
 # IDE & Python build artifacts
 .idea/
-# Ignore any __pycache__ directory anywhere
+
+# Python cache directories (ignored recursively)
 __pycache__/
-**/__pycache__/
-# Ignore Python bytecode
+# Python bytecode
 *.pyc
 *.pyo
 *.pyd
+
+# Additional common Python tooling caches (proactive)
+.mypy_cache/
+.pytest_cache/
+.coverage
+coverage/
+
+# NOTE:
+# If you still SEE __pycache__ files in a GUI (e.g. GitHub Desktop), possible reasons:
+# 1. 'Show Ignored Files' is enabled in the GUI.
+# 2. The file was previously tracked and the deletion hasn't been committed.
+# 3. You're comparing against a branch/commit where it existed.
+# 4. Local filesystem still has the file (normal) but Git is not tracking it.
+# You can remove all caches anytime with:  make clean-pyc

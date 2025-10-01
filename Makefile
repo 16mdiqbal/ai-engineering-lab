@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: venv install freeze run clean help
+.PHONY: venv install freeze run clean clean-pyc help
 
 .venv:
 	python3 -m venv .venv
@@ -24,9 +24,14 @@ run: .venv ## Run a script: make run W=week1-assignment S=main.py
 clean: ## Remove Python caches
 	find . -name '__pycache__' -type d -prune -exec rm -rf {} + -o -name '*.pyc' -delete
 
+clean-pyc: ## Strict purge of all pycache & compiled Python artifacts
+	find . -type d -name '__pycache__' -prune -exec rm -rf {} +
+	find . -name '*.py[co]' -delete
+
 help: ## Show this help
-	@echo "Targets: venv, install, freeze, run, clean"
+	@echo "Targets: venv, install, freeze, run, clean, clean-pyc"
 	@echo "Examples:"
 	@echo "  make venv"
 	@echo "  make install"
 	@echo "  make run W=week1-assignment S=main.py"
+	@echo "  make clean-pyc"
