@@ -41,7 +41,7 @@ class DataAnalyzer(CSVHandler):
     
     def calculate_recovery_rate(self, ascending=False):
         """ 9. Compare Recovery Rates Across Regions """
-        df  = self.load_data()
+        df  = self.load_data(copy=True)
         df['Recovery Rate'] = (df['Recovered'] / df['Confirmed']) * 100
         return df[['Country/Region', 'WHO Region', 'Confirmed', 'Recovered', 'Recovery Rate']].sort_values(by='Recovery Rate', ascending=ascending)
     
