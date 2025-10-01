@@ -3,3 +3,16 @@ data/
 .env*
 .venv/
 .DS_Store
+
+# Ignore AI Engineer Assistant workspace artifacts
+.aiea/
+
+# IDE & Python build artifacts
+.idea/
+# Ignore any __pycache__ directory anywhere
+__pycache__/
+**/__pycache__/
+# Ignore Python bytecode
+*.pyc
+*.pyo
+*.pyd
