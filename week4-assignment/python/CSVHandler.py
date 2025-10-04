@@ -1,4 +1,5 @@
-import numpy as np
+from pathlib import Path
+
 import pandas as pd
 
 class CSVHandler:
@@ -30,11 +31,10 @@ class CSVHandler:
         if reload or self._data_cache is None:
             try:
                 self._data_cache = pd.read_csv(self.file_path)
-                print("Data loaded from disk.")
-            except FileNotFoundError:
-                print(f"File not found: {self.file_path}")
-                self._data_cache = None
-                return None
+                print(f"Data loaded from disk: {Path(self.file_path).resolve()}")
+            except FileNotFoundError as e:
+                # Raise a clear error instead of returning None to avoid hidden NoneType issues downstream
+                raise FileNotFoundError(f"CSV file not found: {self.file_path}") from e
         else:
             # Using cached version
             print("Using cached data.")
@@ -45,7 +45,9 @@ class CSVHandler:
         self._data_cache = None
 
 
-    def export_data(self, df, output_path):
-        ''' Export DataFrame to CSV file '''
-        df.to_csv(output_path, index=False)
-        print(f"Data exported to {output_path}")
+    def export_data(self, df: pd.DataFrame, output_path: str):
+        """ Export DataFrame to CSV file """
+        out = Path(output_path)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        df.to_csv(out, index=False)
+        print(f"Data exported to {out.resolve()}")

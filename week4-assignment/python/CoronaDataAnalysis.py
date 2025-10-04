@@ -65,14 +65,14 @@ class CoronaDataAnalysis(DataAnalyzer):
 
         # 8. Calculate Mortality Rate by Region
         print("8. Calculating mortality rate by region.")
-        mortality_rates = self.calculate_mortality_rate(ascending=False)
+        mortality_rates = self.calculate_mortality_recovery_rates(sort_by_column='Mortality Rate', ascending=False)
         print(mortality_rates[['Country/Region','WHO Region','Mortality Rate']].head(10))
 
         print("\n" + "="*50 + "\n")
 
         # 9. Compare Recovery Rates Across Regions
         print("9. Comparing recovery rates across regions.")
-        recovery_rates = self.calculate_recovery_rate(ascending=False)
+        recovery_rates = self.calculate_mortality_recovery_rates(sort_by_column='Recovery Rate', ascending=False)
         print(recovery_rates[['Country/Region','WHO Region','Recovery Rate']].head(10))
 
         print("\n" + "="*50 + "\n")
