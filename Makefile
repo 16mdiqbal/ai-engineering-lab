@@ -4,11 +4,12 @@ SHELL := /bin/bash
 
 .venv:
 	python3 -m venv .venv
-	. .venv/bin/activate; python -m pip install --upgrade pip
+	.venv/bin/python -m pip install --upgrade pip setuptools wheel
 
 venv: .venv ## Create a local virtual environment and upgrade pip
 
 install: .venv requirements.txt ## Install dependencies from requirements.txt
+	.venv/bin/python -m pip install --upgrade pip
 	.venv/bin/pip install -r requirements.txt
 
 freeze: .venv ## Freeze current environment to requirements.txt
