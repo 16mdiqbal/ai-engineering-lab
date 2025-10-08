@@ -13,6 +13,4 @@ authors = [{ name = "Mohammad Iqbal" }]
 dependencies = []
 
 [tool.setuptools.packages.find]
-# Use namespace packages so __init__.py is not required
 include = ["python_script*"]
-namespaces = true
