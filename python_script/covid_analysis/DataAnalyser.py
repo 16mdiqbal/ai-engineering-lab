@@ -1,8 +1,5 @@
 from collections.abc import Sequence
-
-import numpy as np
-import pandas as pd
-from CSVHandler import CSVHandler
+from .CSVHandler import CSVHandler
 
 class DataAnalyzer(CSVHandler):
     def __init__(self, file_path):

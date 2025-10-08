@@ -23,6 +23,14 @@ __pycache__/
 .coverage
 coverage/
 
+# Build artifacts
+*.egg-info/
+ai_engineer_exercise.egg-info/
+
+# Generated images (keep out of git)
+*/plot_images/
+*/python/figures/
+
 # NOTE:
 # If you still SEE __pycache__ files in a GUI (e.g. GitHub Desktop), possible reasons:
 # 1. 'Show Ignored Files' is enabled in the GUI.

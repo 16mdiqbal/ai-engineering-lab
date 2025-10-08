@@ -1,12 +1,11 @@
-import numpy as np
-import pandas as pd
 from pathlib import Path
-from DataAnalyser import DataAnalyzer
+
+from python_script.covid_analysis.DataAnalyser import DataAnalyzer
 
 # Inherit DataAnalyzer class to perform specific analysis on Corona data
 
-class CoronaDataAnalysis(DataAnalyzer):
 
+class CoronaDataAnalysis(DataAnalyzer):
     def run_testcases(self):
         # 1. Display total confirmed, death, and recovered cases for each region.
         print("1. Summarizing data by WHO Region.")
@@ -34,7 +33,7 @@ class CoronaDataAnalysis(DataAnalyzer):
         summary_sorted = self.sort_data('Confirmed', ascending=True)
         output_file_path = Path(__file__).resolve().parent.parent / 'assignment' / 'country_wise_sorted.csv'
         output_file_path.parent.mkdir(parents=True, exist_ok=True)
-        self.export_data(summary_sorted, output_file_path)
+        self.export_data(summary_sorted, str(output_file_path))
 
         print("\n" + "="*50 + "\n")
 
@@ -120,6 +119,7 @@ class CoronaDataAnalysis(DataAnalyzer):
 
 
 if __name__ == "__main__":
-    file_path = Path(__file__).resolve().parent.parent / 'assignment' / 'country_wise_latest.csv'
+    # Load from the central resources folder where the CSV was moved
+    file_path = Path(__file__).resolve().parents[2] / 'resources' / 'country_wise_latest.csv'
     analysis = CoronaDataAnalysis(str(file_path))
     results = analysis.run_testcases()
