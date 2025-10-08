@@ -1,16 +1,17 @@
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import pandas as pd
 import seaborn as sns
-from matplotlib.pyplot import title
+from python_script.covid_analysis.DataAnalyser import DataAnalyzer
 
-from CoronaDataAnalysis import CoronaDataAnalysis
+class CovidVisualization(DataAnalyzer):
 
-class CovidVisualization(CoronaDataAnalysis):
-
-    def __init__(self, file_path: str|Path, figure_dir: str|Path = "figures"):
+    def __init__(self, file_path: str|Path, figure_dir: str|Path | None = None):
         super().__init__(file_path)
+        if figure_dir is None:
+            # Save under week5-assignment/plot_images
+            project_root = Path(__file__).resolve().parents[2]
+            figure_dir = project_root / 'week5-assignment' / 'plot_images'
         self.figure_dir = Path(figure_dir)
         self.figure_dir.mkdir(parents=True, exist_ok=True)
 
@@ -192,7 +193,7 @@ class CovidVisualization(CoronaDataAnalysis):
 
         fig, ax = plt.subplots(figsize=(8, 5))
         ax.bar(data_by_country.index, data_by_country.values)
-        ax.set_xlabel('Country');
+        ax.set_xlabel('Country')
         ax.set_ylabel('Confirmed')
         ax.set_title(f'Confirmed Cases: India vs {countries[1]}')
         ax.grid(True, axis='y', alpha=0.3)
@@ -218,9 +219,12 @@ class CovidVisualization(CoronaDataAnalysis):
 
 
 if __name__ == "__main__":
-    file_path = Path(__file__).resolve().parent.parent / 'assignment' / 'country_wise_latest.csv'
+    # Use the centralized resources folder for the COVID dataset
+    file_path = Path(__file__).resolve().parents[2] / 'resources' / 'country_wise_latest.csv'
     if not file_path.exists():
-        print("Covid 19 data file not found. Please run the script again.")
+        print(f"Covid 19 data file not found at {file_path}. Exiting.")
+        raise SystemExit(1)
+
     covid_viz = CovidVisualization(file_path)
     charts_generated = covid_viz.main()
     # Print each key:value on separate lines using repr for Axes, with commas between entries

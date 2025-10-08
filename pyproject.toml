@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-engineer-exercise"
+version = "0.1.0"
+description = "AI Engineer exercises and utilities"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Mohammad Iqbal" }]
+dependencies = []
+
+[tool.setuptools.packages.find]
+# Use namespace packages so __init__.py is not required
+include = ["python_script*"]
+namespaces = true
