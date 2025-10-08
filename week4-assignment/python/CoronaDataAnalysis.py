@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from python_script.covid_analysis.DataAnalyser import DataAnalyzer
+from python_script.covid_analysis import DataAnalyzer
 
 # Inherit DataAnalyzer class to perform specific analysis on Corona data
 

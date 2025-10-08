@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from .CSVHandler import CSVHandler
+from python_script.covid_analysis.CSVHandler import CSVHandler
 
 class DataAnalyzer(CSVHandler):
     def __init__(self, file_path):

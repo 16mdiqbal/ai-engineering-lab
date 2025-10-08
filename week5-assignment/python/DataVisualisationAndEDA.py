@@ -2,7 +2,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import seaborn as sns
-from python_script.covid_analysis.DataAnalyser import DataAnalyzer
+from python_script.covid_analysis import DataAnalyzer
 
 class CovidVisualization(DataAnalyzer):
 
