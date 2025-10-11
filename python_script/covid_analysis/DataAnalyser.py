@@ -59,8 +59,8 @@ class DataAnalyzer(CSVHandler):
             if column not in df.columns and column not in ['Mortality Rate', 'Recovery Rate']:
                 raise ValueError(f"Column '{column}' not found in the dataset.")
 
-        df['Mortality Rate'] = (df['Deaths'] / df['Confirmed']) * 100
-        df['Recovery Rate'] = (df['Recovered'] / df['Confirmed']) * 100
+        df.loc[:, 'Mortality Rate'] = (df['Deaths'] / df['Confirmed']) * 100
+        df.loc[:, 'Recovery Rate'] = (df['Recovered'] / df['Confirmed']) * 100
 
         return (
             df[required_columns]

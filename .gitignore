@@ -2,6 +2,7 @@
 data/
 .env*
 .venv/
+.venv314/
 .DS_Store
 
 # Ignore AI Engineer Assistant workspace artifacts
@@ -30,6 +31,10 @@ ai_engineer_exercise.egg-info/
 # Generated images (keep out of git)
 */plot_images/
 */python/figures/
+
+# Generated CSV files
+cleaned_covid_data.csv
+**/cleaned_covid_data.csv
 
 # NOTE:
 # If you still SEE __pycache__ files in a GUI (e.g. GitHub Desktop), possible reasons:

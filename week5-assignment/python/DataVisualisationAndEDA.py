@@ -1,10 +1,15 @@
 from pathlib import Path
+import warnings
 
 import matplotlib.pyplot as plt
 import seaborn as sns
 from python_script.covid_analysis import DataAnalyzer
+from python_script.plot_images import PlotImages
 
-class CovidVisualization(DataAnalyzer):
+# Suppress FutureWarnings from seaborn/pandas compatibility issues
+warnings.filterwarnings('ignore', category=FutureWarning, module='seaborn')
+
+class CovidVisualization(DataAnalyzer, PlotImages):
 
     def __init__(self, file_path: str|Path, figure_dir: str|Path | None = None):
         super().__init__(file_path)
@@ -14,14 +19,6 @@ class CovidVisualization(DataAnalyzer):
             figure_dir = project_root / 'week5-assignment' / 'plot_images'
         self.figure_dir = Path(figure_dir)
         self.figure_dir.mkdir(parents=True, exist_ok=True)
-
-    def save_figure(self, fig, ax, file_name: str = "covid_analysis.png"):
-        """ Save the current matplotlib figure to the figure directory """
-        figure_path = self.figure_dir / file_name
-        fig.tight_layout()
-        plt.savefig(figure_path, dpi=200, bbox_inches='tight')
-        print(f"Figure saved to {figure_path.resolve()}")
-        return ax
 
 
     def bar_chart_top_10_countries_by_confirmed(self):
@@ -213,6 +210,7 @@ class CovidVisualization(DataAnalyzer):
         output['histogram_mortality_rate'] = self.histogram_mortality_rate_distribution()
         output['stacked_bar_confirmed_death_recovered'] = self.stacked_bar_plot_confirmed_death_recovered__by_country()
         output['box_plot_confirmed_cases_by_region'] = self.box_plot_confirmed_cases_by_region()
+
         #output['trend_line_india_vs_another'] = self.trend_line_confirmed_india_vs_another_chosen_country_side_by_side()
 
         return output
