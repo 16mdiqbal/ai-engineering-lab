@@ -32,6 +32,10 @@ ai_engineer_exercise.egg-info/
 */plot_images/
 */python/figures/
 
+# Generated CSV files
+cleaned_covid_data.csv
+**/cleaned_covid_data.csv
+
 # NOTE:
 # If you still SEE __pycache__ files in a GUI (e.g. GitHub Desktop), possible reasons:
 # 1. 'Show Ignored Files' is enabled in the GUI.
