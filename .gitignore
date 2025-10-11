@@ -2,6 +2,7 @@
 data/
 .env*
 .venv/
+.venv314/
 .DS_Store
 
 # Ignore AI Engineer Assistant workspace artifacts
