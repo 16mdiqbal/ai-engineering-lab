@@ -9,11 +9,11 @@ exclude =
     build,
     dist,
     .eggs
-ignore =
-    E203,  # whitespace before ':'
-    E501,  # line too long (handled by max-line-length)
-    W503,  # line break before binary operator
-    W504   # line break after binary operator
+# E203: whitespace before ':'
+# E501: line too long (handled by max-line-length)
+# W503: line break before binary operator
+# W504: line break after binary operator
+ignore = E203,E501,W503,W504
 max-complexity = 10
 count = True
 statistics = True
