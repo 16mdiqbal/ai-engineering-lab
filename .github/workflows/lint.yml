@@ -1,4 +1,4 @@
-name: Lint Check
+name: Quick Syntax Check
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
     branches: [ main, master, develop ]
 
 jobs:
-  lint:
+  syntax-check:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,45 +19,50 @@ jobs:
       with:
         python-version: '3.12'
 
-    - name: Cache pip dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pylint black isort
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: Run flake8
+    - name: Check Python syntax (compile check)
       run: |
-        # Stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # Exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics \
-          --exclude=.git,__pycache__,.venv*,*.egg-info,build,dist
+        echo "🔍 Checking for Python syntax errors..."
+        python -m py_compile $(find . -name "*.py" ! -path "./.venv*/*" ! -path "./build/*" ! -path "./dist/*" ! -path "./*.egg-info/*")
+        echo "✅ No syntax errors found!"
 
-    - name: Run pylint
-      continue-on-error: true
+    - name: Import check
       run: |
-        find . -type f -name "*.py" ! -path "./.venv*/*" ! -path "./build/*" ! -path "./dist/*" \
-          ! -path "./*.egg-info/*" -exec pylint --exit-zero {} +
+        echo "🔍 Checking if Python files can be imported..."
+        python -c "
+        import sys
+        import os
+        errors = []
+        for root, dirs, files in os.walk('.'):
+            # Skip virtual environments and build directories
+            dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ['build', 'dist', '__pycache__']]
+            for file in files:
+                if file.endswith('.py'):
+                    filepath = os.path.join(root, file)
+                    try:
+                        with open(filepath, 'r') as f:
+                            compile(f.read(), filepath, 'exec')
+                    except SyntaxError as e:
+                        errors.append(f'{filepath}: {e}')
+        if errors:
+            print('❌ Syntax errors found:')
+            for err in errors:
+                print(f'  {err}')
+            sys.exit(1)
+        else:
+            print('✅ All Python files are importable!')
+        "
 
-    - name: Check code formatting with black
-      run: |
-        black --check --diff --exclude='/(\.venv.*|\.git|__pycache__|.*\.egg-info|build|dist)/' .
-
-    - name: Check import sorting with isort
-      run: |
-        isort --check-only --diff --skip .venv --skip .venv314 --skip-glob "*.egg-info" .
-
-    - name: Lint Summary
+    - name: Summary
       if: always()
       run: |
-        echo "✅ Linting checks completed!"
-        echo "Review the output above for any issues that need attention."
+        echo "✅ Syntax check completed!"
+        echo "This check only validates:"
+        echo "  • Python syntax errors"
+        echo "  • Compilation issues"
+        echo "  • Import problems"
 

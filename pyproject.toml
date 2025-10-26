@@ -1,23 +1,4 @@
-[tool.black]
-line-length = 127
-target-version = ['py312']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.venv
-  | \.venv314
-  | __pycache__
-  | \.eggs
-  | \.egg-info
-  | build
-  | dist
-)/
-'''
+# Project configuration file
+# Currently minimal - add tool configurations as needed
 
-[tool.isort]
-profile = "black"
-line_length = 127
-skip = [".venv", ".venv314", ".git", "__pycache__", "*.egg-info", "build", "dist"]
-known_first_party = ["python_script"]
 
