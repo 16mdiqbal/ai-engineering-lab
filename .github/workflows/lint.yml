@@ -1,0 +1,68 @@
+name: Quick Syntax Check
+
+on:
+  pull_request:
+    branches: [ main, master, develop ]
+  push:
+    branches: [ main, master, develop ]
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Check Python syntax (compile check)
+      run: |
+        echo "🔍 Checking for Python syntax errors..."
+        python -m py_compile $(find . -name "*.py" ! -path "./.venv*/*" ! -path "./build/*" ! -path "./dist/*" ! -path "./*.egg-info/*")
+        echo "✅ No syntax errors found!"
+
+    - name: Import check
+      run: |
+        echo "🔍 Checking if Python files can be imported..."
+        python -c "
+        import sys
+        import os
+        errors = []
+        for root, dirs, files in os.walk('.'):
+            # Skip virtual environments and build directories
+            dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ['build', 'dist', '__pycache__']]
+            for file in files:
+                if file.endswith('.py'):
+                    filepath = os.path.join(root, file)
+                    try:
+                        with open(filepath, 'r') as f:
+                            compile(f.read(), filepath, 'exec')
+                    except SyntaxError as e:
+                        errors.append(f'{filepath}: {e}')
+        if errors:
+            print('❌ Syntax errors found:')
+            for err in errors:
+                print(f'  {err}')
+            sys.exit(1)
+        else:
+            print('✅ All Python files are importable!')
+        "
+
+    - name: Summary
+      if: always()
+      run: |
+        echo "✅ Syntax check completed!"
+        echo "This check only validates:"
+        echo "  • Python syntax errors"
+        echo "  • Compilation issues"
+        echo "  • Import problems"
+

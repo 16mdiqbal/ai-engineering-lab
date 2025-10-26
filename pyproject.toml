@@ -1,16 +1,4 @@
-[build-system]
-requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.build_meta"
+# Project configuration file
+# Currently minimal - add tool configurations as needed
 
-[project]
-name = "ai-engineer-exercise"
-version = "0.1.0"
-description = "AI Engineer exercises and utilities"
-readme = "README.md"
-requires-python = ">=3.10"
-license = { text = "MIT" }
-authors = [{ name = "Mohammad Iqbal" }]
-dependencies = []
 
-[tool.setuptools.packages.find]
-include = ["python_script*"]

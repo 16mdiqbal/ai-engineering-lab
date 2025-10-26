@@ -122,6 +122,75 @@ class PlotImages:
         plt.tight_layout()
         return fig
 
+    def plot_scatter(self, df: pd.DataFrame, x: str, y: str, hue: str | None = None, size: str | None = None, figsize: tuple = (8, 6), alpha: float = 0.8, palette: str | list | dict = 'deep'):
+        """ Plot a scatter plot between two columns with optional hue and size.
+
+        Args:
+            df: Input DataFrame
+            x: Column name for x-axis
+            y: Column name for y-axis
+            hue: Optional column name to use for color encoding
+            size: Optional column name to use for point size encoding
+            figsize: Figure size as (width, height) tuple
+            alpha: Marker transparency (default: 0.8)
+            palette: Color palette for hue (default: 'deep')
+
+        Returns:
+            matplotlib figure object
+        """
+        # Validate column arguments
+        if not isinstance(x, str) or not isinstance(y, str):
+            raise TypeError("Parameters 'x' and 'y' must be column name strings.")
+
+        missing = [col for col in (x, y) if col not in df.columns]
+        if missing:
+            raise ValueError(f"Columns not found in the DataFrame: {missing}")
+
+        if hue is not None and hue not in df.columns:
+            raise ValueError(f"Hue column not found in the DataFrame: {hue}")
+
+        if size is not None and size not in df.columns:
+            raise ValueError(f"Size column not found in the DataFrame: {size}")
+
+        # Create figure and axis
+        fig, ax = plt.subplots(figsize=figsize)
+
+        # Use seaborn scatterplot for styling
+        # Build kwargs conditionally to avoid passing unused palette when hue is None
+        scatter_kwargs = dict(
+            data=df,
+            x=x,
+            y=y,
+            alpha=alpha,
+            ax=ax,
+            edgecolor='w',
+            linewidth=0.5,
+        )
+
+        if hue is not None:
+            scatter_kwargs['hue'] = hue
+            scatter_kwargs['palette'] = palette
+
+        if size is not None:
+            scatter_kwargs['size'] = size
+
+        sns.scatterplot(**scatter_kwargs)
+
+        # Set title and labels
+        title_parts = [f'Scatter plot of {y} vs {x}']
+        if hue:
+            title_parts.append(f'colored by {hue}')
+        if size:
+            title_parts.append(f'sized by {size}')
+        ax.set_title(' — '.join(title_parts), fontsize=14, fontweight='bold')
+        ax.set_xlabel(x)
+        ax.set_ylabel(y)
+
+        # Improve layout and grid
+        ax.grid(True, alpha=0.3)
+        plt.tight_layout()
+        return fig
+
     def save_figure(self, fig, ax, file_name: str = "covid_analysis.png"):
         """ Save the current matplotlib figure to the figure directory """
         figure_path = self.figure_dir / file_name
@@ -129,3 +198,4 @@ class PlotImages:
         plt.savefig(figure_path, dpi=200, bbox_inches='tight')
         print(f"Figure saved to {figure_path.resolve()}")
         return ax
+
