@@ -1,16 +1,23 @@
-[build-system]
-requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.build_meta"
+[tool.black]
+line-length = 127
+target-version = ['py312']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | \.venv314
+  | __pycache__
+  | \.eggs
+  | \.egg-info
+  | build
+  | dist
+)/
+'''
 
-[project]
-name = "ai-engineer-exercise"
-version = "0.1.0"
-description = "AI Engineer exercises and utilities"
-readme = "README.md"
-requires-python = ">=3.10"
-license = { text = "MIT" }
-authors = [{ name = "Mohammad Iqbal" }]
-dependencies = []
+[tool.isort]
+profile = "black"
+line_length = 127
+skip = [".venv", ".venv314", ".git", "__pycache__", "*.egg-info", "build", "dist"]
+known_first_party = ["python_script"]
 
-[tool.setuptools.packages.find]
-include = ["python_script*"]
